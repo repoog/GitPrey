@@ -11,6 +11,9 @@ GITHUB_HOST = "https://github.com"
 
 # input key words for searching
 key_words = raw_input("Please input key words with plus sign for searching:")
+if key_words is None:
+    print "Please input key words with plus sign for searching again."
+    exit()
 
 # get information count
 pre_res_html = requests.get("https://github.com/search?o=desc&q=" + key_words +"&ref=searchresults&s=indexed&type=Code&utf8=%E2%9C%93")
