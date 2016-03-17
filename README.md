@@ -23,6 +23,7 @@ GitPrey是根据企业关键词进行项目检索以及相应敏感文件和敏�
 * 未登录Github进行代码搜索会因为请求速度过快（约10页代码结果页）而返回HTTP STATUE 429，即Too Many Requests的错误，因此需要登录后进行搜索；
 * 在展现用户和项目信息实现中，采用GitHub API来实现，因此需要Access Token进行认证（未认证的请求频率限制为10次/分钟，认证的请求频率限制为30次/分钟）以增加请求频率限制（Rate Limit）；
 * 在项目内关键词文件名和关键词内容扫描时未采用API，原因有两点：一是搜索代码的API频率限制很大（认证后30次/分钟）无法满足快速搜索；二是某些项目关键词的搜索结果项超过100条，而API在设置per_page参数后至多支持展现100条结果项；
+
 ***
 ***
 ## Sensitive info scan tool of Github
@@ -51,6 +52,7 @@ There are some hints to declare about technological details:
 * Github API is not used in searching code,because its rate limit up to 30 times per minute,even if you authenticate by access token.
 * The other reason is searching code only support up to 100 items in each searching.
 * Only user information crawler used Github API,it's enough for scanning speed.
+
 ***
 ***
 ### 功能界面演示/Startup UI
@@ -82,4 +84,3 @@ There are some hints to declare about technological details:
 [-]Compromise URL: https://github.com//franklinxkk/wuyan/blob/1d5c80fa77ef4e2d35208ae40418ec63f3454298/v1/server/systemConfigShell/config.js
 </code>
 </pre>
-***
