@@ -26,8 +26,6 @@ GitPrey是根据企业关键词进行项目检索以及相应敏感文件和敏�
 
 
 ### 功能界面演示
-<pre>
-<code>
      $$$$$$\  $$$$$$\ $$$$$$$$\       $$$$$$$\  $$$$$$$\  $$$$$$$$\ $$\     $$ \
     $$  __$$\ \_$$  _|\__$$  __|      $$  __$$\ $$  __$$\ $$  _____|\$$\   $$  |
     $$ /  \__|  $$ |     $$ |         $$ |  $$ |$$ |  $$ |$$ |       \$$\ $$  /
@@ -42,16 +40,4 @@ GitPrey是根据企业关键词进行项目检索以及相应敏感文件和敏�
     Create Date: 2016-03-16
     Python Version: v2.7.10
     
-[*_*]Please input keywords of company for searching: xxxxxx xxxxxxx
-[!_!]PROJECT INFO: Found [9] public projects relating to the key words.
-[+_+]User Nickname: franklinxkk
-[+_+]User Realname: franklin.li
-[+_+]Avatar Link: https://avatars.githubusercontent.com/u/4848054?v=3
-[+_+]Email Address: franklin.xkk@gmail.com
-[+_+]Project Name: wuyan
-[+_+]Project Link: https://github.com/franklinxkk/wuyan
-[-]Sensitive File: v1/server/systemConfigShell/config.js
-[-]Compromise URL: https://github.com//franklinxkk/wuyan/blob/1d5c80fa77ef4e2d35208ae40418ec63f3454298/v1/server/systemConfigShell/config.js
-</code>
-</pre>
 ***
