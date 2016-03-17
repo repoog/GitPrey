@@ -16,7 +16,7 @@ GitPrey是根据企业关键词进行项目检索以及相应敏感文件和敏�
 * Level 4：检索最近索引的前70页代码页；
 * Level 5：检索最近索引的前100页代码页；
 
-深度选择与企业扫描周期性应该成正相关，深度选择小，则相应扫描的周期性也应当较小，如深度选择为Level 1，则相应的扫描周期基于企业情况可定为每天或每周；深度选择为Level 5，则相应的扫描周期可适当延长如每季度或半年。
+深度选择与企业扫描周期性应该成正相关，深度选择小，则相应扫描的周期性也应当较小，如深度选择为Level 1，则相应的扫描周期基于企业情况可定为每天或每周，深度选择为Level 5，则相应的扫描周期可适当延长。例如，关键词“Google”最大（Level 5）可搜索两天前上传的项目代码，关键词“Wecash”搜索结果则不足100页。
 
 ### 技术实现说明
 项目配置文件Config.py中需要配置使用者的Github用户名、密码以及在个人设置中生成的Access Token值，其作用如下：
@@ -41,8 +41,8 @@ GitPrey是根据企业关键词进行项目检索以及相应敏感文件和敏�
     Create Date: 2016-03-16
     Python Version: v2.7.10
     
-[*] Please input keywords of company for searching: wecash password
-[!]PROJECT INFO: Found [9] public projects relating to the key words.
+[*_*]Please input keywords of company for searching: xxxxxx xxxxxxx
+[!_!]PROJECT INFO: Found [9] public projects relating to the key words.
 [+_+]User Nickname: franklinxkk
 [+_+]User Realname: franklin.li
 [+_+]Avatar Link: https://avatars.githubusercontent.com/u/4848054?v=3
@@ -51,7 +51,6 @@ GitPrey是根据企业关键词进行项目检索以及相应敏感文件和敏�
 [+_+]Project Link: https://github.com/franklinxkk/wuyan
 [-]Sensitive File: v1/server/systemConfigShell/config.js
 [-]Compromise URL: https://github.com//franklinxkk/wuyan/blob/1d5c80fa77ef4e2d35208ae40418ec63f3454298/v1/server/systemConfigShell/config.js
-[-]Sensitive File: v1/server/systemConfigShell/db.config
 </code>
 </pre>
 ***
