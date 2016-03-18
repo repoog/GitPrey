@@ -19,7 +19,6 @@ HOST_NAME = "https://github.com/"
 
 project_queue = Queue.Queue(0)
 cookie = cookielib.CookieJar()
-request_time = 0
 
 class GitPrey(object):
     """
@@ -49,19 +48,22 @@ class GitPrey(object):
         Search related projects with recently indexed sort according to keyword
         Returns: return related projects queue
         """
+        project_list = []
         self.__auto_login_github(USER_NAME, PASSWORD)  # get cookie of logining for crawling projects
-        for i in range(1, MAX_PAGE_NUM[SEARCH_LEVEL]+1):
+        for i in range(1, MAX_PAGE_NUM[SEARCH_LEVEL-1]+1):
             code_url = self.search_url.format(page=i, keyword=self.keyword)
             page_html = self.__get_page_html(code_url)
             cur_par_html = BeautifulSoup(page_html, "html.parser")
             project_info = cur_par_html.select("p.title > a:nth-of-type(1)")
             project_count = len(project_info)
             for j in range(0, project_count):
-                if project_info[j].string not in project_queue.queue:
-                    project_queue.put(project_info[j].string)
+                project_list.append(project_info[j].string)
             # deal the last page results with quiting page crawler
             if project_count < MAX_RLT_PER_PAGE:
                 break
+            project_list = list(set(project_list))
+        for item in project_list:
+            project_queue.put(item)
 
     def sensitive_info_check(self, project_info):
         """
