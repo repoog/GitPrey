@@ -25,7 +25,6 @@ GitPrey是根据企业关键词进行项目检索以及相应敏感文件和敏�
 * 在项目内关键词文件名和关键词内容扫描时未采用API，原因有两点：一是搜索代码的API频率限制很大（认证后30次/分钟）无法满足快速搜索；二是某些项目关键词的搜索结果项超过100条，而API在设置per_page参数后至多支持展现100条结果项；
 
 ***
-***
 ## Sensitive info scan tool of Github
 ### Function introduction and design
 GitPrey is a tool for searching sensitive information or data according to company name or key word something.The design mind is from searching sensitive data leakling in Github:
@@ -54,7 +53,6 @@ There are some hints to declare about technological details:
 * Only user information crawler used Github API,it's enough for scanning speed.
 
 ***
-***
 ### 功能界面演示/Startup UI
 <pre>
 <code>
@@ -74,13 +72,5 @@ There are some hints to declare about technological details:
     
 [*_*]Please input keywords of company for searching: xxxxxx xxxxxxx
 [!_!]PROJECT INFO: Found [9] public projects relating to the key words.
-[+_+]User Nickname: franklinxkk
-[+_+]User Realname: franklin.li
-[+_+]Avatar Link: https://avatars.githubusercontent.com/u/4848054?v=3
-[+_+]Email Address: franklin.xkk@gmail.com
-[+_+]Project Name: wuyan
-[+_+]Project Link: https://github.com/franklinxkk/wuyan
-[-]Sensitive File: v1/server/systemConfigShell/config.js
-[-]Compromise URL: https://github.com//franklinxkk/wuyan/blob/1d5c80fa77ef4e2d35208ae40418ec63f3454298/v1/server/systemConfigShell/config.js
 </code>
 </pre>
