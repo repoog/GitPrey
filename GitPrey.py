@@ -61,7 +61,7 @@ class GitPrey(object):
             # deal the last page results with quiting page crawler
             if project_count < MAX_RLT_PER_PAGE:
                 break
-            project_list = list(set(project_list))
+        project_list = list(set(project_list))
         for item in project_list:
             project_queue.put(item)
 
