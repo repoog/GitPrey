@@ -51,26 +51,3 @@ There are some hints to declare about technological details:
 * Github API is not used in searching code,because its rate limit up to 30 times per minute,even if you authenticate by access token.
 * The other reason is searching code only support up to 100 items in each searching.
 * Only user information crawler used Github API,it's enough for scanning speed.
-
-***
-### 功能界面演示/Startup UI
-<pre>
-<code>
-     $$$$$$\  $$$$$$\ $$$$$$$$\       $$$$$$$\  $$$$$$$\  $$$$$$$$\ $$\     $$ \
-    $$  __$$\ \_$$  _|\__$$  __|      $$  __$$\ $$  __$$\ $$  _____|\$$\   $$  |
-    $$ /  \__|  $$ |     $$ |         $$ |  $$ |$$ |  $$ |$$ |       \$$\ $$  /
-    $$ |$$$$\   $$ |     $$ |         $$$$$$$  |$$$$$$$  |$$$$$\      \$$$$  /
-    $$ |\_$$ |  $$ |     $$ |         $$  ____/ $$  __$$< $$  __|      \$$  /
-    $$ |  $$ |  $$ |     $$ |         $$ |      $$ |  $$ |$$ |          $$ |
-    \$$$$$$  |$$$$$$\    $$ |         $$ |      $$ |  $$ |$$$$$$$$\     $$ |
-     \______/ \______|   \__|         \__|      \__|  \__|\________|    \__|
-
-    Author; Cooper Pei
-    Version: 2.0
-    Create Date: 2016-03-16
-    Python Version: v2.7.10
-    
-[*_*]Please input keywords of company for searching: xxxxxx xxxxxxx
-[!_!]PROJECT INFO: Found [9] public projects relating to the key words.
-</code>
-</pre>
