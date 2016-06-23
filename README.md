@@ -16,13 +16,26 @@ GitPrey是根据企业关键词进行项目检索以及相应敏感文件和敏�
 * Level 4：检索最近索引的前70页代码页；
 * Level 5：检索最近索引的前100页代码页；
 
-深度选择与企业扫描周期性应该成正相关，深度选择小，则相应扫描的周期性也应当较小，如深度选择为Level 1，则相应的扫描周期基于企业情况可定为每天或每周，深度选择为Level 5，则相应的扫描周期可适当延长。例如，关键词“Google”最大（Level 5）可搜索两天前上传的项目代码，关键词“repoog”搜索结果则不足1页。
+深度选择与企业扫描周期性应该成正相关，深度选择小，则相应扫描的周期性也应当较小，如深度选择为Level 1，则相应的扫描周期基于企业情况可定为每天或每周，深度选择为Level 5，则相应的扫描周期可适当延长。例如，关键词“Google”最大（Level 5）可搜索两天前上传的项目代码，而关键词“repoog”搜索结果则不足1页。
 
 ### 技术实现说明
-项目配置文件Config.py中需要配置使用者的Github用户名、密码以及在个人设置中生成的Access Token值，其作用如下：
+项目配置文件Config.py中需要配置使用者的Github用户名、密码：
 * 未登录Github进行代码搜索会因为请求速度过快（约10页代码结果页）而返回HTTP STATUE 429，即Too Many Requests的错误，因此需要登录后进行搜索；
-* 在展现用户和项目信息实现中，采用GitHub API来实现，因此需要Access Token进行认证（未认证的请求频率限制为10次/分钟，认证的请求频率限制为30次/分钟）以增加请求频率限制（Rate Limit）；
 * 在项目内关键词文件名和关键词内容扫描时未采用API，原因有两点：一是搜索代码的API频率限制很大（认证后30次/分钟）无法满足快速搜索；二是某些项目关键词的搜索结果项超过100条，而API在设置per_page参数后至多支持展现100条结果项；
+
+### 程序使用帮助
+GitPrey v2.2版本后去除了ACCESS_TOKEN的配置以及配置文件中的SEARCH_LEVEL和KEYWORDS配置项，改用命令行参数方式执行：
+    USAGE:
+        -l  Set search level for searching projects within 1-5, default level is 1.
+        -k  Set key words for searching projects.
+        -h  Show help information.
+-l参数是选填参数，用于设置代码搜索深度；-k参数是必填参数，用于设置搜索关键词，若关键词中包含空白字符，需用双引号将关键词括起来；-h参数是帮助信息。
+
+### 程序更新列表
+* v1.0 初始版本
+* v2.0 更新搜索设计和算法
+* v2.1 更新搜索结果输出展现
+* v2.2 优化部分代码，增加项目搜索进度条，解决代码输出BUG
 
 ***
 ## Sensitive info scan tool of Github
@@ -49,5 +62,11 @@ You can modify the Level in Config.py.To search as quick as you can,you must con
 ### Tech detail introduction
 There are some hints to declare about technological details:
 * Github API is not used in searching code,because its rate limit up to 30 times per minute,even if you authenticate by access token.
-* The other reason is searching code only support up to 100 items in each searching.
 * Only user information crawler used Github API,it's enough for scanning speed.
+
+### GitPrey usage
+GitPrey removed ACCESS_TOKEN, SEARCH_LEVEL and KEYWORDS configuration from v2.2:
+    USAGE:
+        -l  Set search level for searching projects within 1-5, default level is 1.
+        -k  Set key words for searching projects.
+        -h  Show help information.
