@@ -25,10 +25,10 @@ GitPrey是根据企业关键词进行项目检索以及相应敏感文件和敏�
 
 ### 程序使用帮助
 GitPrey v2.2版本后去除了ACCESS_TOKEN的配置以及配置文件中的SEARCH_LEVEL和KEYWORDS配置项，改用命令行参数方式执行：
-    USAGE:
-        -l  Set search level for searching projects within 1-5, default level is 1.
-        -k  Set key words for searching projects.
-        -h  Show help information.
+`    USAGE:`
+`        -l  Set search level for searching projects within 1-5, default level is 1.`
+`        -k  Set key words for searching projects.`
+`        -h  Show help information.`
 -l参数是选填参数，用于设置代码搜索深度；-k参数是必填参数，用于设置搜索关键词，若关键词中包含空白字符，需用双引号将关键词括起来；-h参数是帮助信息。
 
 ### 程序更新列表
