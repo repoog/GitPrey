@@ -8,12 +8,10 @@ except ImportError:
     exit()
 
 try:
-    from Config import *
+    from config.Config import *
 except ImportError:
-    print "[!_!]ERROR INFO: Missing Config file or ColorPrint file."
+    print "[!_!]ERROR INFO: Missing Config file."
     exit()
-
-HOST_NAME = "https://github.com/"
 
 class DBOP(object):
     """
@@ -26,18 +24,19 @@ class DBOP(object):
     def __del__(self):
         self.db.close()
 
-    def record_command_log(self, pra_level, pra_keywords, pra_date):
+    def record_command_log(self, pra_level, pra_keywords, pra_date, pra_owner):
         """
         Record command executing information which includes search level,keywords and executed date
         :param pra_level: Searching level
         :param pra_keywords: Searching keywords
         :param pra_date: Executing date
+        :param pra_owner: Executing user
         :return: None
         """
-        command_log_sql = 'INSERT INTO prey_execution_log(search_level, search_keyword, execute_date) ' \
-                          'VALUES(%s, %s, %s)'
+        command_log_sql = 'INSERT INTO prey_execution_log(search_level, search_keyword, execute_date, execute_user) ' \
+                          'VALUES(%s, %s, %s, %s)'
 
-        self.cursor.execute(command_log_sql, (pra_level, pra_keywords, pra_date))
+        self.cursor.execute(command_log_sql, (pra_level, pra_keywords, pra_date, pra_owner))
         self.db.commit()
 
     def record_project_info(self, project_list):
@@ -61,7 +60,7 @@ class DBOP(object):
 
     def record_user_info(self, user_list):
         """
-        Record user information which includes nickname, realname, avatar url and email,
+        Record user information which includes nickname, realname, avatar url and email
         :param user_list: User information dictionary list
         :return: None
         """
@@ -130,7 +129,7 @@ class DBOP(object):
                               'WHERE execute_user = %s'
 
         ignore_repo_list = []
-        self.cursor.execute(ignore_project_list, [''])
+        self.cursor.execute(ignore_project_list, [execute_user])
         project_set = self.cursor.fetchall()
         for project in project_set:
             ignore_repo_list.append(project[0])
