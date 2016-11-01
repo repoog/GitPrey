@@ -32,11 +32,6 @@ except ImportError:
     print "[!_!]ERROR INFO: Can't find ColorPrint file for printing."
     exit()
 
-try:
-    from include.DB import *
-except ImportError:
-    print "[!_!]ERROR INFO: Can't find DB file for database operation."
-    exit()
 
 HOST_NAME = "https://github.com/"
 SCAN_DEEP = [10, 30, 50, 70, 100]  # Scanning deep according to page searching count and time out seconds
@@ -63,13 +58,12 @@ class GitPrey(object):
     Python Version: v2.7.10
     """
 
-    def __init__(self, keyword, task_owner):
+    def __init__(self, keyword):
         self.keyword = keyword
         self.search_url = "https://github.com/search?o=desc&p={page}&q={keyword}&ref=searchresults&s=indexed&type=Code&utf8=%E2%9C%93"
         self.headers = {
             'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.116 Safari/537.36"}
         self.cookies = ""
-        self.task_owner = task_owner
 
     def search_project(self):
         """
@@ -139,8 +133,7 @@ class GitPrey(object):
             # Output code line with sensitive key words like username.
             info_sig_list = self.__pattern_db_list(INFO_DB)
             info_sig_list.extend(pass_sig_list)
-            repo_code_dic = self.__file_content_inspect(content_string, info_sig_list)
-            return repo_code_dic
+            self.__file_content_inspect(content_string, info_sig_list)
 
         if mode == "filename":
             # Search project according to file path.
@@ -148,8 +141,7 @@ class GitPrey(object):
             split_string = " filename:"
             path_string = split_string.join(path_sig_list)
             path_string = split_string + path_string + project_string
-            repo_file_dic = self.__file_name_inspect(path_string)
-            return repo_file_dic
+            self.__file_name_inspect(path_string)
 
     def __file_content_inspect(self, content_query_string, info_sig_list):
         """
@@ -159,7 +151,6 @@ class GitPrey(object):
         """
         re_match = "|".join(info_sig_list)
         page_num = 1
-        repo_code_dic = {}
         while page_num <= MAX_PAGE_NUM:
             check_url = self.search_url.format(page=page_num, keyword=content_query_string)
             page_html = self.__get_page_html(check_url)
@@ -175,22 +166,16 @@ class GitPrey(object):
                 if project_info != cur_project_info:
                     project_info = cur_project_info
                     self.__output_project_info(cur_project_info)
-                    repo_code_dic[cur_project_info] = {}  # Set project file dictionary
                 if project_file_url != cur_file_url:
                     project_file_url = cur_file_url
                     file_url_output = "[-]Compromise File: {file_url}"
                     file_print(file_url_output.format(file_url=HOST_NAME + cur_file_url[1:]))
-                    repo_code_dic[cur_project_info][HOST_NAME + cur_file_url[1:]] = []  # Set code block of project file
                 account_code = re.search(re_match, code_line.text, re.I)
                 if account_code:
                     code_print(">> " + code_line.text.encode('utf-8').strip())
-                    repo_code_dic[cur_project_info][HOST_NAME + cur_file_url[1:]].append(
-                        code_line.text.encode('utf-8').strip())
                 else:
                     continue
             page_num += 1
-
-        return repo_code_dic
 
     def __file_name_inspect(self, file_query_string):
         """
@@ -199,7 +184,6 @@ class GitPrey(object):
         :returns: None
         """
         page_num = 1
-        repo_file_dic = {}
         while page_num <= MAX_PAGE_NUM:
             check_url = self.search_url.format(page=page_num, keyword=file_query_string)
             page_html = self.__get_page_html(check_url)
@@ -215,13 +199,9 @@ class GitPrey(object):
                 if project_info != cur_project_info:
                     project_info = cur_project_info
                     self.__output_project_info(cur_project_info)
-                    repo_file_dic[cur_project_info] = []  # Set compromise project item
                     file_print("[-]Compromise File:")
                 file_print(HOST_NAME + file_url[1:])
-                repo_file_dic[cur_project_info].append(HOST_NAME + file_url[1:])  # Set compromise project file item
             page_num += 1
-
-        return repo_file_dic
 
     @staticmethod
     def __pattern_db_list(file_path):
@@ -344,7 +324,6 @@ def usage():
     print 'USAGE:'
     print '\t-l\tSet level for searching within 1~5, default level is 1.'
     print '\t-k\tSet key words for searching projects.'
-    print '\t-u\tExecution user email for notifying searching results.'
     print '\t-h\tShow help information.'
     exit()
 
@@ -358,7 +337,7 @@ if __name__ == "__main__":
 
     # Get command parameters for searching level and key words
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hl:k:u:")
+        opts, args = getopt.getopt(sys.argv[1:], "hl:k:")
         if not opts:
             usage()
     except getopt.GetoptError:
@@ -371,8 +350,6 @@ if __name__ == "__main__":
             SEARCH_LEVEL = int(value)
         elif op == '-k':
             keyword_string = value
-        elif op == '-u':
-            execution_user = value
         elif op == '-h':
             usage()
 
@@ -391,31 +368,11 @@ if __name__ == "__main__":
 
     # Search projects according to key words and searching level
     total_project_list = []
-    _gitprey = GitPrey(keyword_string, execution_user)
+    _gitprey = GitPrey(keyword_string)
     total_project_list = _gitprey.search_project()
-
-    # Record execution log with execution user and execution date
-    db_obj = DBOP()
-    db_obj.record_command_log(SEARCH_LEVEL, keyword_string, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()), execution_user)
-    ignore_project_list = db_obj.get_ignore_projects(execution_user)
-
-    # Remove ignored projects from unique project list
-    target_project_list = list(set(total_project_list) - set(ignore_project_list))
-
-    # Record results of searched projects
-    unique_user_list = []
-    unique_user_info_list = []
-    for key, repo in enumerate(target_project_list):
-        unique_user_list.append(repo.split("/")[0])
-    unique_user_list = list(set(unique_user_list))
-    for key, user in enumerate(unique_user_list):
-        unique_user_info_list.append(_gitprey.output_user_info(user))
-    db_obj.record_user_info(unique_user_info_list)
-    db_obj.record_project_info(target_project_list)
-
     project_info_output = "\n[*_*]PROJECT INFO: Found {num} public projects related to the key words.\n"
-    info_print(project_info_output.format(num=len(target_project_list)))
-    if not target_project_list:
+    info_print(project_info_output.format(num=len(total_project_list)))
+    if not total_project_list:
         exit()
 
     # Join all projects to together to search
@@ -425,12 +382,10 @@ if __name__ == "__main__":
 
     # Scan all projects with pattern filename
     info_print("[^_^]START INFO: Begin searching sensitive file.")
-    repo_code_dic = _gitprey.sensitive_info_query(repo_string, "filename")
-    db_obj.record_code_block(repo_code_dic)  # Store code blocks of compromise project files
+    _gitprey.sensitive_info_query(repo_string, "filename")
     info_print("[^_^]END INFO: Sensitive file searching is done.\n")
 
     # Scan all projects with pattern content
     info_print("[^_^]START INFO: Begin searching sensitive content.")
-    repo_file_dic = _gitprey.sensitive_info_query(repo_string, "content")
-    db_obj.record_compromise_file(repo_file_dic)  # Store compromise file records
+    _gitprey.sensitive_info_query(repo_string, "content")
     info_print("[^_^]END INFO: Sensitive content searching is done.\n")
