@@ -4,6 +4,9 @@ PASS_DB = "pattern/pass.db"
 FILE_DB = "pattern/file.db"
 INFO_DB = "pattern/info.db"
 
+# Output file default name
+OUTPUT_FILE = "gitprey.txt"
+
 # GitHub account config for searching
 USER_NAME = "repoog"
-PASSWORD = ""
+PASSWORD = "/*F0r0p3nS0urc3*/"
