@@ -9,4 +9,4 @@ OUTPUT_FILE = "gitprey.txt"
 
 # GitHub account config for searching
 USER_NAME = "repoog"
-PASSWORD = "/*F0r0p3nS0urc3*/"
+PASSWORD = ""
