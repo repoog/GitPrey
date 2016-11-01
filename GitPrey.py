@@ -54,7 +54,7 @@ class GitPrey(object):
     Author; Cooper Pei
     Version: 2.4
     Create Date: 2016-03-15
-    Update Date: 2016-11-05
+    Update Date: 2016-11-01
     Python Version: v2.7.10
     """
 
