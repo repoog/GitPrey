@@ -22,12 +22,15 @@ GitPrey是根据企业关键词进行项目检索以及相应敏感文件和敏�
 项目配置文件Config.py中需要配置使用者的Github用户名、密码：
 * 未登录Github进行代码搜索会因为请求速度过快（约10页代码结果页）而返回HTTP STATUE 429，即Too Many Requests的错误，因此需要登录后进行搜索；
 * 在项目内关键词文件名和关键词内容扫描时未采用API，原因有两点：一是搜索代码的API频率限制很大（认证后30次/分钟）无法满足快速搜索；二是某些项目关键词的搜索结果项超过100条，而API在设置per_page参数后至多支持展现100条结果项；
+项目配置文件Config.py中需要配置FILE_DB/INFO_DB/PASS_DB/PATH_DB项，用途如下：_
+* 敏感文件搜索是基于配置项中的PATH_DB内容检索特定文件的泄漏；
+* 敏感内容搜索是基于PASS_DB和FILE_DB进行检索，再根据INFO_DB和PASS_DB输出相关代码行；_
 
 ### 程序使用帮助
 GitPrey v2.2版本后去除了ACCESS_TOKEN的配置以及配置文件中的SEARCH_LEVEL和KEYWORDS配置项，改用命令行参数方式执行：
 ```
 USAGE:
-        -l  Set search level for searching projects within 1-5, default level is 1.
+        -l  Set level for searching within 1~5, default level is 1.
         -k  Set key words for searching projects.
         -h  Show help information.
 ```
@@ -38,6 +41,7 @@ USAGE:
 * v2.0 更新搜索设计和算法
 * v2.1 更新搜索结果输出展现
 * v2.2 优化部分代码，增加项目搜索进度条，解决代码输出BUG
+* v2.4 优化程序目录设计，优化源码实现，删除冗余代码
 
 ***
 ## Sensitive info scan tool of Github
@@ -65,6 +69,9 @@ You can modify the Level in Config.py.To search as quick as you can,you must con
 There are some hints to declare about technological details:
 * Github API is not used in searching code,because its rate limit up to 30 times per minute,even if you authenticate by access token.
 * Only user information crawler used Github API,it's enough for scanning speed.
+You have to config FILE_DB/INFO_DB/PASS_DB/PATH_DB in config.py:
+* PATH_DB is used to search specific file in related projects when searching file leaking.
+* FILE_DB and PASS_DB are used to searching sensitive content in related projects when searching content leaking, while INFO_DB and PASS_DB is used to output code line._
 
 ### GitPrey usage
 GitPrey removed ACCESS_TOKEN, SEARCH_LEVEL and KEYWORDS configuration from v2.2:

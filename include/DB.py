@@ -4,14 +4,17 @@
 try:
     import MySQLdb
 except ImportError:
-    print "[!_!]ERROR INFO: You need to install MySQLdb module."
+    print "[!_!]ERROR INFO: You have to install MySQLdb module."
     exit()
 
 try:
     from config.Config import *
 except ImportError:
-    print "[!_!]ERROR INFO: Missing Config file."
+    print "[!_!]ERROR INFO: Can't find config file."
     exit()
+
+HOST_NAME = "https://github.com/"
+
 
 class DBOP(object):
     """
@@ -49,7 +52,7 @@ class DBOP(object):
                            'VALUES (%s, %s, %s, %s)'
 
         project_info_pram = []
-        for project in project_list:
+        for key, project in enumerate(project_list):
             uid_eid_sql = 'SELECT MAX(uid), MAX(eid) FROM prey_related_users WHERE nickname = %s'
             self.cursor.execute(uid_eid_sql, [project.split("/")[0]])
             uid_eid = self.cursor.fetchone()
@@ -68,7 +71,7 @@ class DBOP(object):
                         'VALUES(%s, %s, %s, %s, %s)'
 
         user_info_pram = []
-        for user in user_list:
+        for key, user in enumerate(user_list):
             eid_sql = 'SELECT MAX(eid) FROM prey_execution_log'
             self.cursor.execute(eid_sql)
             eid = self.cursor.fetchone()
@@ -87,7 +90,7 @@ class DBOP(object):
                               'VALUES(%s, %s, %s)'
 
         file_info_pram = []
-        for repo in repo_file_dic:
+        for key, repo in enumerate(repo_file_dic):
             pid_eid_sql = 'SELECT MAX(pid), MAX(eid) FROM prey_related_projects WHERE project_name = %s'
             self.cursor.execute(pid_eid_sql, [repo])
             pid_eid = self.cursor.fetchone()
@@ -107,7 +110,7 @@ class DBOP(object):
                          'VALUES(%s, %s, %s, %s)'
 
         code_block_pram = []
-        for repo in repo_code_dic:
+        for key, repo in enumerate(repo_code_dic):
             pid_eid_sql = 'SELECT MAX(pid), MAX(eid) FROM prey_related_projects WHERE project_name = %s'
             self.cursor.execute(pid_eid_sql, [repo])
             pid_eid = self.cursor.fetchone()
@@ -131,7 +134,7 @@ class DBOP(object):
         ignore_repo_list = []
         self.cursor.execute(ignore_project_list, [execute_user])
         project_set = self.cursor.fetchall()
-        for project in project_set:
+        for key, project in enumerate(project_set):
             ignore_repo_list.append(project[0])
 
         return ignore_repo_list
