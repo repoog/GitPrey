@@ -277,6 +277,9 @@ class GitPrey(object):
         post_data['password'] = password
         login_request.post("https://github.com/session", data=post_data, headers=self.headers)
         self.cookies = login_request.cookies
+        if self.cookies['logged_in'] == 'no':
+            error_print('[!_!]ERROR INFO: Login Github failed, please account config.')
+            exit()
 
     def __get_page_html(self, url):
         """
