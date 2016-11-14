@@ -18,7 +18,7 @@ import sys
 import re
 import time
 import imp
-import getopt
+import argparse
 
 try:
     from config.Config import *
@@ -311,25 +311,6 @@ def is_keyword_valid(keyword):
         return False
 
 
-def is_level_valid(level):
-    """
-    Verify search level config is valid
-    :param level: Search level
-    :returns: False if invalid, True if valid
-    """
-    if isinstance(level, int) and level in range(1, 6):
-        return True
-    else:
-        return False
-
-
-def usage():
-    print 'USAGE:'
-    print '\t-l\tSet level for searching within 1~5, default level is 1.'
-    print '\t-k\tSet key words for searching projects.'
-    print '\t-h\tShow help information.'
-    exit()
-
 if __name__ == "__main__":
     # Verify lxml module is installed
     try:
@@ -339,31 +320,29 @@ if __name__ == "__main__":
         exit()
 
     # Get command parameters for searching level and key words
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "hl:k:")
-        if not opts:
-            usage()
-    except getopt.GetoptError:
-        usage()
+    parser = argparse.ArgumentParser(description="Searching sensitive file and content in GitHub.")
+    parser.add_argument("-l", "--level", type=int, choices=range(1, 6), default=1, metavar="level",
+                        help="Set level for searching within 1~5, default level is 1.")
+    parser.add_argument("-k", "--keywords", metavar="keywords", required=True,
+                        help="Set key words for searching projects.")
+    parser.add_argument("-u", "--user", metavar="username", required=True,
+                        help="Execution user email for notifying searching results.")
+    args = parser.parse_args()
 
     keyword_string = ""
     execution_user = ""
-    for op, value in opts:
-        if op == '-l':
-            SEARCH_LEVEL = int(value)
-        elif op == '-k':
-            keyword_string = value
-        elif op == '-h':
-            usage()
+    if args.level:
+        SEARCH_LEVEL = args.level
+    if args.keywords:
+        keyword_string = args.keywords
+    if args.user:
+        execution_user = args.user
 
     # Print GitPrey digital logo and version information.
     info_print(GitPrey.__doc__)
 
     if not is_keyword_valid(keyword_string):
         error_print("[!_!]ERROR INFO: The key words you input are invalid. Please input again.")
-        exit()
-    elif not is_level_valid(SEARCH_LEVEL):
-        error_print("[!_!]ERROR INFO: Searching level must in 1~5.")
         exit()
     else:
         keyword_output = "[^_^]START INFO: The key words for searching are: {keyword}"
