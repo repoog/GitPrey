@@ -325,18 +325,13 @@ if __name__ == "__main__":
                         help="Set level for searching within 1~5, default level is 1.")
     parser.add_argument("-k", "--keywords", metavar="keywords", required=True,
                         help="Set key words for searching projects.")
-    parser.add_argument("-u", "--user", metavar="username", required=True,
-                        help="Execution user email for notifying searching results.")
     args = parser.parse_args()
 
     keyword_string = ""
-    execution_user = ""
     if args.level:
         SEARCH_LEVEL = args.level
     if args.keywords:
         keyword_string = args.keywords
-    if args.user:
-        execution_user = args.user
 
     # Print GitPrey digital logo and version information.
     info_print(GitPrey.__doc__)
