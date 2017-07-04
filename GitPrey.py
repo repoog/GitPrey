@@ -14,8 +14,8 @@ except ImportError:
     print "[!_!]ERROR INFO: You have to install BeautifulSoup module."
     exit()
 
-import sys
 import re
+import sys
 import time
 import imp
 import argparse
@@ -32,8 +32,8 @@ except ImportError:
     print "[!_!]ERROR INFO: Can't find ColorPrint file for printing."
     exit()
 
-
 HOST_NAME = "https://github.com/"
+RAW_NAME = "https://raw.githubusercontent.com/"
 SCAN_DEEP = [10, 30, 50, 70, 100]  # Scanning deep according to page searching count and time out seconds
 SEARCH_LEVEL = 1  # Code searching level within 1-5, default is 1
 MAX_PAGE_NUM = 100  # Maximum results of code searching
@@ -51,10 +51,10 @@ class GitPrey(object):
     \$$$$$$  |$$$$$$\    $$ |         $$ |      $$ |  $$ |$$$$$$$$\     $$ |
      \______/ \______|   \__|         \__|      \__|  \__|\________|    \__|
 
-    Author; Cooper Pei
-    Version: 2.4
+    Author: Cooper Pei
+    Version: 2.5
     Create Date: 2016-03-15
-    Update Date: 2016-11-01
+    Update Date: 2017-07-05
     Python Version: v2.7.10
     """
 
@@ -72,27 +72,25 @@ class GitPrey(object):
         """
         unique_project_list = []
         self.__auto_login(USER_NAME, PASSWORD)
-        info_print('[@_@]Searching related projects hard...')
+        info_print('[@_@] Searching projects hard...')
+
         # Get unique project list of first page searched results
+        total_progress = SCAN_DEEP[SEARCH_LEVEL - 1]
         query_string = self.keyword + " in:file,path"
-        for i in xrange(SCAN_DEEP[SEARCH_LEVEL - 1]):
+        for i in xrange(total_progress):
             # Print process of searching project
-            total_progress = SCAN_DEEP[SEARCH_LEVEL - 1]
             progress_point = int((i + 1) * (100 / total_progress))
             sys.stdout.write(str(progress_point) + '%|' + '#' * progress_point + '|\r')
             sys.stdout.flush()
             # Search project in each page
             code_url = self.search_url.format(page=1, keyword=query_string)
             page_html_parse = self.__get_page_html(code_url)
-            project_list = self.__page_project_list(page_html_parse)
-            page_project_num = len(project_list)
-            project_list = list(set(project_list))
-            unique_project_list.extend(project_list)
+            project_list = self.__page_project_list(page_html_parse)    # Project list of per result page
+            page_project_num, project_list = len(project_list), list(set(project_list))
+            unique_project_list.extend(project_list)    # Extend unique project list of per page
             if page_project_num < MAX_RLT_PER_PAGE:
                 break
-            project = " -repo:"
-            project = project.join(project_list)
-            project = " -repo:" + project
+            project = " -repo:" + " -repo:".join(project_list)
             query_string += project
         # Deal with last progress bar stdout
         sys.stdout.write('100%|' + '#' * 100 + '|\r')
@@ -106,102 +104,98 @@ class GitPrey(object):
         :param page_html: Html page content
         :returns: Project list of per page
         """
-        page_project = []
         cur_par_html = BeautifulSoup(page_html, "lxml")
-        project_info = cur_par_html.select("p.title > a:nth-of-type(1)")
-        for key, project in enumerate(project_info):
-            page_project.append(project.text)
+        project_info = cur_par_html.select(".text-bold")
+        page_project = [project.text for project in project_info]
         return page_project
 
     def sensitive_info_query(self, project_string, mode):
         """
-        Search sensitive information and sensitive file of project
+        Search sensitive information and sensitive file from projects
         :param project_string: Key words string for querying
         :param mode: Searching mode within "content" or "filename"
         :returns: None
         """
         if mode == "content":
-            # Search project according to password and filename words.
-            pass_sig_list = self.__pattern_db_list(PASS_DB)
-            split_string = " OR "
-            pass_string = split_string.join(pass_sig_list)
-            file_sig_list = self.__pattern_db_list(FILE_DB)
-            split_string = " filename:"
-            content_string = split_string.join(file_sig_list)
-            content_string = pass_string + split_string + content_string + project_string
-
             # Output code line with sensitive key words like username.
             info_sig_list = self.__pattern_db_list(INFO_DB)
-            info_sig_list.extend(pass_sig_list)
-            self.__file_content_inspect(content_string, info_sig_list)
+            file_sig_list = self.__pattern_db_list(FILE_DB)
+            file_pattern = " filename:" + " filename:".join(file_sig_list)
+            code_dic = {}
+            # Most five AND/OR operators in search function.
+            for i in xrange(len(info_sig_list)/5+1):
+                project_pattern = info_sig_list[i*5:i*5+5]
+                repo_code_dic = self.__file_content_inspect(project_string, file_pattern, project_pattern)
+                code_dic.update(repo_code_dic)
+            return code_dic
 
         if mode == "filename":
             # Search project according to file path.
             path_sig_list = self.__pattern_db_list(PATH_DB)
-            split_string = " filename:"
-            path_string = split_string.join(path_sig_list)
-            path_string = split_string + path_string + project_string
-            self.__file_name_inspect(path_string)
+            path_string = " filename:" + " filename:".join(path_sig_list) + project_string
+            repo_file_dic = self.__file_name_inspect(path_string, print_mode=1)
+            return repo_file_dic
 
-    def __file_content_inspect(self, content_query_string, info_sig_list):
+    def __file_content_inspect(self, project_string, file_pattern, project_pattern):
         """
         Check sensitive code in particular project
         :param content_query_string: Content string for searching
+        :param info_sig_match: information signature match regular
         :returns: None
         """
-        re_match = "|".join(info_sig_list)
-        page_num = 1
-        while page_num <= MAX_PAGE_NUM:
-            check_url = self.search_url.format(page=page_num, keyword=content_query_string)
-            page_html = self.__get_page_html(check_url)
-            file_info = BeautifulSoup(page_html, 'lxml')
-            code_frag = file_info.select('tr .blob-code.blob-code-inner')
-            if not code_frag:
-                break
-            project_info = project_file_url = ""
-            for key, code_line in enumerate(code_frag):
-                cur_file_url = code_line.previous_sibling.previous_sibling.a['href'].split("#")[0]
-                cur_project_info = "/".join(cur_file_url.split("/")[1:3])
-                # Deal with code content for every project
-                if project_info != cur_project_info:
-                    project_info = cur_project_info
-                    self.__output_project_info(cur_project_info)
-                if project_file_url != cur_file_url:
-                    project_file_url = cur_file_url
-                    file_url_output = "[-]Compromise File: {file_url}"
-                    file_print(file_url_output.format(file_url=HOST_NAME + cur_file_url[1:]))
-                account_code = re.search(re_match, code_line.text, re.I)
-                if account_code:
-                    code_print(">> " + code_line.text.encode('utf-8').strip())
-                else:
-                    continue
-            page_num += 1
+        query_string = " OR ".join(project_pattern)
+        repo_file_dic = self.__file_name_inspect(query_string + project_string + file_pattern)
+        repo_code_dic = {}
+        for repo_name in repo_file_dic:
+            self.__output_project_info(repo_name)
+            repo_code_dic[repo_name] = {}  # Set code line dictionary
+            for file_url in repo_file_dic[repo_name]:
+                file_url_output = "[-] Compromise File: {file_url}"
+                file_print(file_url_output.format(file_url=file_url))
+                repo_code_dic[repo_name][file_url] = []  # Set code block of project file
+                # Read codes from raw file by replace host to raw host.
+                code_file = self.__get_page_html(file_url.replace(HOST_NAME, RAW_NAME).replace('blob/', ''))
+                for code_line in code_file.split('\n'):
+                    account_code = re.search('|'.join(project_pattern), code_line, re.I)
+                    if account_code:
+                        code_print(">> " + code_line.encode('utf-8').strip())
+                        repo_code_dic[repo_name][file_url].append(code_line.encode('utf-8').strip())
+                    else:
+                        continue
 
-    def __file_name_inspect(self, file_query_string):
+        return repo_code_dic
+
+    def __file_name_inspect(self, file_query_string, print_mode=0):
         """
         Inspect sensitive file in particular project
         :param file_query_string: File string for searching
         :returns: None
         """
         page_num = 1
-        while page_num <= MAX_PAGE_NUM:
+        repo_file_dic = {}
+        while page_num <= SCAN_DEEP[SEARCH_LEVEL - 1]:
             check_url = self.search_url.format(page=page_num, keyword=file_query_string)
             page_html = self.__get_page_html(check_url)
             project_html = BeautifulSoup(page_html, 'lxml')
-            repo_list = project_html.select('div .full-path > a')
+            repo_list = project_html.select('div .d-inline-block.col-10 > a:nth-of-type(2)')
             if not repo_list:
                 break
-            project_info = ""
-            for key, repo in enumerate(repo_list):
+            # Handle file links for each project
+            for repo in repo_list:
                 file_url = repo.attrs['href']
-                cur_project_info = "/".join(file_url.split("/")[1:3])
-                # Deal with code content for every project
-                if project_info != cur_project_info:
-                    project_info = cur_project_info
-                    self.__output_project_info(cur_project_info)
-                    file_print("[-]Compromise File:")
-                file_print(HOST_NAME + file_url[1:])
+                cur_project_name = "/".join(file_url.split("/")[1:3])
+                if cur_project_name not in repo_file_dic.keys():
+                    if print_mode:
+                        self.__output_project_info(cur_project_name)
+                        file_print("[-] Compromise File:")
+                    repo_file_dic[cur_project_name] = []  # Set compromise project item
+                else:
+                    repo_file_dic[cur_project_name].append(HOST_NAME + file_url[1:])  # Set compromise project file item
+                    if print_mode:
+                        file_print(HOST_NAME + file_url[1:])
             page_num += 1
+
+        return repo_file_dic
 
     @staticmethod
     def __pattern_db_list(file_path):
@@ -225,45 +219,16 @@ class GitPrey(object):
         :returns: None
         """
         user_name, project_name = project.split(r"/")
-        user_info = "[+_+]User Nickname: {nickname}"
+        user_info = "[+_+] User Nickname: {nickname}"
         project_print(user_info.format(nickname=user_name))
-        project_info = "[+_+]Project Name: {name}\n[+_+]Project Link: {link}"
-        project_print(project_info.format(name=project_name, link=HOST_NAME + project))
-
-    def output_user_info(self, username):
-        """
-        Output detail information of specific username
-        :param username: Specific username
-        :return: User information include nickname, real name, avatar and email
-        """
-        user_info_dic = {}
-        page_html = self.__get_page_html(HOST_NAME + username)
-        parse_file = BeautifulSoup(page_html, 'lxml')
-        user_info_dic['nickname'] = username
-        # Get real name from personal page
-        realname = parse_file.select('div .vcard-fullname')
-        if realname:
-            user_info_dic['realname'] = realname[0].text.encode('utf-8')
-        else:
-            user_info_dic['realname'] = ''
-        # Get avatar from personal page
-        avatar = parse_file.select('a[itemprop="image"]')
-        if avatar:
-            user_info_dic['avatar'] = avatar[0].attrs['href'].encode('utf-8')
-        else:
-            avatar = parse_file.select('img[itemprop="image"]')
-            user_info_dic['avatar'] = avatar[0].attrs['src'].encode('utf-8')
-        # Get email from personal page
-        email = parse_file.select('ul .vcard-detail a[href^="mailto"]')
-        if email:
-            user_info_dic['email'] = email[0].text.encode('utf-8')
-        else:
-            user_info_dic['email'] = ''
-        return user_info_dic
+        project_info = "[+_+] Project Name: {name}"
+        project_print(project_info.format(name=project_name))
+        project_info = "[+_+] Project Link: {link}"
+        project_print(project_info.format(link=HOST_NAME + project))
 
     def __auto_login(self, username, password):
         """
-        Get cookie for auto login GitHub
+        Get cookie for logining GitHub
         :returns: None
         """
         login_request = requests.Session()
@@ -273,12 +238,11 @@ class GitPrey(object):
         input_items = soup.find('form').findAll('input')
         for item in input_items:
             post_data[item.get('name')] = item.get('value')
-        post_data['login'] = username
-        post_data['password'] = password
+        post_data['login'], post_data['password'] = username, password
         login_request.post("https://github.com/session", data=post_data, headers=self.headers)
         self.cookies = login_request.cookies
         if self.cookies['logged_in'] == 'no':
-            error_print('[!_!]ERROR INFO: Login Github failed, please account config.')
+            error_print('[!_!] ERROR INFO: Login Github failed, please check account in config file.')
             exit()
 
     def __get_page_html(self, url):
@@ -293,9 +257,11 @@ class GitPrey(object):
                 time.sleep(SCAN_DEEP[SEARCH_LEVEL - 1])
                 self.__get_page_html(url)
             return page_html.text
-        except requests.ConnectionError:
-            error_print("[!_!]ERROR INFO: There is a problem in requesting html page.")
+        except requests.ConnectionError, e:
+            error_print("[!_!] ERROR INFO: There is '%s' problem in requesting html page." % str(e))
             exit()
+        except requests.ReadTimeout:
+            return ''
 
 
 def is_keyword_valid(keyword):
@@ -311,8 +277,11 @@ def is_keyword_valid(keyword):
         return False
 
 
-if __name__ == "__main__":
-    # Verify lxml module is installed
+def init():
+    """
+    Initialize GitPrey with module inspection and input inspection
+    :return: None
+    """
     try:
         imp.find_module('lxml')
     except ImportError:
@@ -322,47 +291,56 @@ if __name__ == "__main__":
     # Get command parameters for searching level and key words
     parser = argparse.ArgumentParser(description="Searching sensitive file and content in GitHub.")
     parser.add_argument("-l", "--level", type=int, choices=range(1, 6), default=1, metavar="level",
-                        help="Set level for searching within 1~5, default level is 1.")
+                        help="Set search level within 1~5, default is 1.")
     parser.add_argument("-k", "--keywords", metavar="keywords", required=True,
-                        help="Set key words for searching projects.")
+                        help="Set key words to search projects.")
     args = parser.parse_args()
 
-    keyword_string = ""
-    if args.level:
-        SEARCH_LEVEL = args.level
-    if args.keywords:
-        keyword_string = args.keywords
+    SEARCH_LEVEL = args.level if args.level else 1
+    key_words = args.keywords if args.keywords else ""
 
     # Print GitPrey digital logo and version information.
     info_print(GitPrey.__doc__)
 
-    if not is_keyword_valid(keyword_string):
-        error_print("[!_!]ERROR INFO: The key words you input are invalid. Please input again.")
+    if not is_keyword_valid(key_words):
+        error_print("[!_!] ERROR INFO: The key word you input is invalid. Please try again.")
         exit()
     else:
-        keyword_output = "[^_^]START INFO: The key words for searching are: {keyword}"
-        info_print(keyword_output.format(keyword=keyword_string))
+        keyword_output = "[^_^] START INFO: The key word for searching is: {keyword}"
+        info_print(keyword_output.format(keyword=key_words))
 
+    return key_words
+
+
+def project_miner(key_words):
+    """
+    Search projects for content and path inspection later.
+    :param key_words: key words for searching
+    :return:
+    """
     # Search projects according to key words and searching level
-    total_project_list = []
-    _gitprey = GitPrey(keyword_string)
+    _gitprey = GitPrey(key_words)
     total_project_list = _gitprey.search_project()
-    project_info_output = "\n[*_*]PROJECT INFO: Found {num} public projects related to the key words.\n"
+
+    project_info_output = "\n[*_*] PROJECT INFO: Found {num} public projects related to the key words.\n"
     info_print(project_info_output.format(num=len(total_project_list)))
-    if not total_project_list:
-        exit()
 
     # Join all projects to together to search
-    split_string = " repo:"
-    repo_string = split_string.join(total_project_list)
-    repo_string = split_string + repo_string
+    repo_string = " repo:" + " repo:".join(total_project_list)
 
     # Scan all projects with pattern filename
-    info_print("[^_^]START INFO: Begin searching sensitive file.")
+    info_print("[^_^] START INFO: Begin searching sensitive file.")
     _gitprey.sensitive_info_query(repo_string, "filename")
-    info_print("[^_^]END INFO: Sensitive file searching is done.\n")
+    info_print("[^_^] END INFO: Sensitive file searching is done.\n")
 
     # Scan all projects with pattern content
-    info_print("[^_^]START INFO: Begin searching sensitive content.")
+    info_print("[^_^] START INFO: Begin searching sensitive content.")
     _gitprey.sensitive_info_query(repo_string, "content")
-    info_print("[^_^]END INFO: Sensitive content searching is done.\n")
+    info_print("[^_^] END INFO: Sensitive content searching is done.\n")
+
+
+if __name__ == "__main__":
+    # Initialize key words input.
+    key_words = init()
+    # Search related projects depend on key words.
+    project_miner(key_words)

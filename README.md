@@ -34,7 +34,15 @@ USAGE:
         -k  Set key words for searching projects.
         -h  Show help information.
 ```
--l参数是选填参数，用于设置代码搜索深度；-k参数是必填参数，用于设置搜索关键词，若关键词中包含空白字符，需用双引号将关键词括起来；-h参数是帮助信息。
+-l：选填参数，用于设置代码搜索深度；
+-k：必填参数，用于设置搜索关键词，若关键词中包含空白字符，需用双引号将关键词括起来；
+-h：帮助信息。
+
+### 文件配置说明
+pattern为搜索项文件配置目录，相关文件说明如下：
+* path.db：敏感文件名或文件后缀，用于搜索文件名，如：htpasswd
+* file.db：敏感内容关键词搜索的文件名称范围，内容搜索在该文件名称范围内进行，如：.env
+* info.db：敏感内容关键词（由于AND/OR/NOT操作符在Github单次搜索中最多支持五个，故关键词会进行轮询），如：password
 
 ### 程序更新列表
 * v1.0 初始版本
@@ -42,6 +50,7 @@ USAGE:
 * v2.1 更新搜索结果输出展现
 * v2.2 优化部分代码，增加项目搜索进度条，解决代码输出BUG
 * v2.4 优化程序目录设计，优化源码实现，增加默认文件输出
+* v2.5 优化代码搜索为整页代码搜索，优化颜色输出及文件输出，优化代码实现
 
 ***
 ## Sensitive info scan tool of Github
@@ -79,3 +88,10 @@ GitPrey removed ACCESS_TOKEN, SEARCH_LEVEL and KEYWORDS configuration from v2.2:
         -l  Set search level for searching projects within 1-5, default level is 1.
         -k  Set key words for searching projects.
         -h  Show help information.
+
+### pattern file introduction
+pattern is a directory putting db files:
+* path.db: sensitive file path, such as htpasswd
+* file.db: the files name which sensitive content maybe in, such as .env
+* info.db: sensitive content key words for searching, such as password
+
