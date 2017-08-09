@@ -235,7 +235,7 @@ class GitPrey(object):
         login_html = login_request.get("https://github.com/login", headers=self.headers)
         post_data = {}
         soup = BeautifulSoup(login_html.text, "lxml")
-        input_items = soup.find('form').findAll('input')
+        input_items = soup.find_all('input')
         for item in input_items:
             post_data[item.get('name')] = item.get('value')
         post_data['login'], post_data['password'] = username, password
