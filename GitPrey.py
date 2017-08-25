@@ -105,7 +105,7 @@ class GitPrey(object):
         :returns: Project list of per page
         """
         cur_par_html = BeautifulSoup(page_html, "lxml")
-        project_info = cur_par_html.select(".text-bold")
+        project_info = cur_par_html.select("a.text-bold")
         page_project = [project.text for project in project_info]
         return page_project
 
