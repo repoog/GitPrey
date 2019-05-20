@@ -1,4 +1,6 @@
 ## GitHub敏感信息扫描工具
+![](https://img.shields.io/github/license/repoog/GitPrey.svg)
+[![Twitter](https://img.shields.io/twitter/url/https/github.com/repoog/GitPrey.svg?style=social)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Frepoog%2FGitPrey)
 ### 功能设计说明
 GitPrey是根据企业关键词进行项目检索以及相应敏感文件和敏感文件内容扫描的工具，其设计思路如下：
 * 根据关键词在GitHub中进行全局代码内容和路径的搜索（in:file,path），将项目结果做项目信息去重整理得到所有关键词相关的项目，即疑似项目结果；
