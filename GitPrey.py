@@ -42,14 +42,14 @@ MAX_RLT_PER_PAGE = 10  # Maximum results count of per page
 
 class GitPrey(object):
     """
-     $$$$$$\  $$$$$$\ $$$$$$$$\       $$$$$$$\  $$$$$$$\  $$$$$$$$\ $$\     $$ \\
-    $$  __$$\ \_$$  _|\__$$  __|      $$  __$$\ $$  __$$\ $$  _____|\$$\   $$  |
-    $$ /  \__|  $$ |     $$ |         $$ |  $$ |$$ |  $$ |$$ |       \$$\ $$  /
-    $$ |$$$$\   $$ |     $$ |         $$$$$$$  |$$$$$$$  |$$$$$\      \$$$$  /
-    $$ |\_$$ |  $$ |     $$ |         $$  ____/ $$  __$$< $$  __|      \$$  /
-    $$ |  $$ |  $$ |     $$ |         $$ |      $$ |  $$ |$$ |          $$ |
-    \$$$$$$  |$$$$$$\    $$ |         $$ |      $$ |  $$ |$$$$$$$$\     $$ |
-     \______/ \______|   \__|         \__|      \__|  \__|\________|    \__|
+     $$$$$$\  $$$$$$\ $$$$$$$$\ $$$$$$$\  $$$$$$$\  $$$$$$$$\ $$\     $$ \\
+    $$  __$$\ \_$$  _|\__$$  __|$$  __$$\ $$  __$$\ $$  _____|\$$\   $$  |
+    $$ /  \__|  $$ |     $$ |   $$ |  $$ |$$ |  $$ |$$ |       \$$\ $$  /
+    $$ |$$$$\   $$ |     $$ |   $$$$$$$  |$$$$$$$  |$$$$$\      \$$$$  /
+    $$ |\_$$ |  $$ |     $$ |   $$  ____/ $$  __$$< $$  __|      \$$  /
+    $$ |  $$ |  $$ |     $$ |   $$ |      $$ |  $$ |$$ |          $$ |
+    \$$$$$$  |$$$$$$\    $$ |   $$ |      $$ |  $$ |$$$$$$$$\     $$ |
+     \______/ \______|   \__|   \__|      \__|  \__|\________|    \__|
 
     Author: repoog
     Version: 2.6
@@ -158,7 +158,7 @@ class GitPrey(object):
                 for code_line in code_file.split('\n'):
                     account_code = re.search('|'.join(project_pattern), code_line, re.I)
                     if account_code:
-                        code_print(">> " + code_line.encode('utf-8').strip())
+                        code_print(">> " + code_line.strip())
                         repo_code_dic[repo_name][file_url].append(code_line.encode('utf-8').strip())
                     else:
                         continue
@@ -177,7 +177,7 @@ class GitPrey(object):
             check_url = self.search_url.format(page=page_num, keyword=file_query_string)
             page_html = self.__get_page_html(check_url)
             project_html = BeautifulSoup(page_html, 'lxml')
-            repo_list = project_html.select('div .d-inline-block.col-10 > a:nth-of-type(2)')
+            repo_list = project_html.select('div .min-width-0 > a:nth-of-type(2)')
             if not repo_list:
                 break
             # Handle file links for each project
