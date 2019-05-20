@@ -1,35 +1,35 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 try:
     import requests
     from requests.auth import HTTPBasicAuth
 except ImportError:
-    print "[!_!]ERROR INFO: You have to install requests module."
+    print("[!]Error: You have to install requests module.")
     exit()
 
 try:
     from bs4 import BeautifulSoup
 except ImportError:
-    print "[!_!]ERROR INFO: You have to install BeautifulSoup module."
+    print("[!]Error: You have to install BeautifulSoup module.")
     exit()
 
 import re
+import math
 import sys
 import time
-import imp
+import importlib.util
 import argparse
 
 try:
     from config.Config import *
 except ImportError:
-    print "[!_!]ERROR INFO: Can't find Config file for searching."
+    print("[!]Error: Can't find Config file for searching.")
     exit()
 
 try:
     from include.ColorPrint import *
 except ImportError:
-    print "[!_!]ERROR INFO: Can't find ColorPrint file for printing."
+    print("[!]Error: Can't find ColorPrint file for printing.")
     exit()
 
 HOST_NAME = "https://github.com/"
@@ -51,11 +51,11 @@ class GitPrey(object):
     \$$$$$$  |$$$$$$\    $$ |         $$ |      $$ |  $$ |$$$$$$$$\     $$ |
      \______/ \______|   \__|         \__|      \__|  \__|\________|    \__|
 
-    Author: Cooper Pei
-    Version: 2.5
+    Author: repoog
+    Version: 2.6
     Create Date: 2016-03-15
-    Update Date: 2017-07-05
-    Python Version: v2.7.10
+    Update Date: 2019-05-20
+    Python Version: v3.6.4
     """
 
     def __init__(self, keyword):
@@ -72,12 +72,12 @@ class GitPrey(object):
         """
         unique_project_list = []
         self.__auto_login(USER_NAME, PASSWORD)
-        info_print('[@_@] Searching projects hard...')
+        info_print('[*] Searching projects hard...')
 
         # Get unique project list of first page searched results
         total_progress = SCAN_DEEP[SEARCH_LEVEL - 1]
         query_string = self.keyword + " in:file,path"
-        for i in xrange(total_progress):
+        for i in range(total_progress):
             # Print process of searching project
             progress_point = int((i + 1) * (100 / total_progress))
             sys.stdout.write(str(progress_point) + '%|' + '#' * progress_point + '|\r')
@@ -123,7 +123,7 @@ class GitPrey(object):
             file_pattern = " filename:" + " filename:".join(file_sig_list)
             code_dic = {}
             # Most five AND/OR operators in search function.
-            for i in xrange(len(info_sig_list)/5+1):
+            for i in range(math.floor(len(info_sig_list)/5)+1):
                 project_pattern = info_sig_list[i*5:i*5+5]
                 repo_code_dic = self.__file_content_inspect(project_string, file_pattern, project_pattern)
                 code_dic.update(repo_code_dic)
@@ -219,11 +219,11 @@ class GitPrey(object):
         :returns: None
         """
         user_name, project_name = project.split(r"/")
-        user_info = "[+_+] User Nickname: {nickname}"
+        user_info = "[+] User Nickname: {nickname}"
         project_print(user_info.format(nickname=user_name))
-        project_info = "[+_+] Project Name: {name}"
+        project_info = "[+] Project Name: {name}"
         project_print(project_info.format(name=project_name))
-        project_info = "[+_+] Project Link: {link}"
+        project_info = "[+] Project Link: {link}"
         project_print(project_info.format(link=HOST_NAME + project))
 
     def __auto_login(self, username, password):
@@ -242,7 +242,7 @@ class GitPrey(object):
         login_request.post("https://github.com/session", data=post_data, headers=self.headers)
         self.cookies = login_request.cookies
         if self.cookies['logged_in'] == 'no':
-            error_print('[!_!] ERROR INFO: Login Github failed, please check account in config file.')
+            error_print('[!] Error: Login Github failed, please check account in config file.')
             exit()
 
     def __get_page_html(self, url):
@@ -257,8 +257,8 @@ class GitPrey(object):
                 time.sleep(SCAN_DEEP[SEARCH_LEVEL - 1])
                 self.__get_page_html(url)
             return page_html.text
-        except requests.ConnectionError, e:
-            error_print("[!_!] ERROR INFO: There is '%s' problem in requesting html page." % str(e))
+        except requests.ConnectionError as e:
+            error_print("[!] Error: There is '%s' problem in requesting html page." % str(e))
             exit()
         except requests.ReadTimeout:
             return ''
@@ -282,10 +282,8 @@ def init():
     Initialize GitPrey with module inspection and input inspection
     :return: None
     """
-    try:
-        imp.find_module('lxml')
-    except ImportError:
-        error_print('[!_!]ERROR INFO: You have to install lxml module.')
+    if not importlib.util.find_spec('lxml'):
+        error_print('[!]Error: You have to install lxml module.')
         exit()
 
     # Get command parameters for searching level and key words
@@ -303,10 +301,10 @@ def init():
     info_print(GitPrey.__doc__)
 
     if not is_keyword_valid(key_words):
-        error_print("[!_!] ERROR INFO: The key word you input is invalid. Please try again.")
+        error_print("[!] Error: The key word you input is invalid. Please try again.")
         exit()
     else:
-        keyword_output = "[^_^] START INFO: The key word for searching is: {keyword}"
+        keyword_output = "[*] The key word for searching is: {keyword}"
         info_print(keyword_output.format(keyword=key_words))
 
     return key_words
@@ -322,21 +320,21 @@ def project_miner(key_words):
     _gitprey = GitPrey(key_words)
     total_project_list = _gitprey.search_project()
 
-    project_info_output = "\n[*_*] PROJECT INFO: Found {num} public projects related to the key words.\n"
+    project_info_output = "\n[*] Found {num} public projects related to the key words.\n"
     info_print(project_info_output.format(num=len(total_project_list)))
 
     # Join all projects to together to search
     repo_string = " repo:" + " repo:".join(total_project_list)
 
     # Scan all projects with pattern filename
-    info_print("[^_^] START INFO: Begin searching sensitive file.")
+    info_print("[*] Begin searching sensitive file.")
     _gitprey.sensitive_info_query(repo_string, "filename")
-    info_print("[^_^] END INFO: Sensitive file searching is done.\n")
+    info_print("[*] Sensitive file searching is done.\n")
 
     # Scan all projects with pattern content
-    info_print("[^_^] START INFO: Begin searching sensitive content.")
+    info_print("[*] Begin searching sensitive content.")
     _gitprey.sensitive_info_query(repo_string, "content")
-    info_print("[^_^] END INFO: Sensitive content searching is done.\n")
+    info_print("[*] Sensitive content searching is done.\n")
 
 
 if __name__ == "__main__":
