@@ -105,8 +105,8 @@ class GitPrey(object):
         :returns: Project list of per page
         """
         cur_par_html = BeautifulSoup(page_html, "lxml")
-        project_info = cur_par_html.select("a.text-bold")
-        page_project = [project.text for project in project_info]
+        project_info = cur_par_html.select("a.link-gray")
+        page_project = [project.text.strip() for project in project_info]  # Remove space character
         return page_project
 
     def sensitive_info_query(self, project_string, mode):
@@ -177,7 +177,7 @@ class GitPrey(object):
             check_url = self.search_url.format(page=page_num, keyword=file_query_string)
             page_html = self.__get_page_html(check_url)
             project_html = BeautifulSoup(page_html, 'lxml')
-            repo_list = project_html.select('div .min-width-0 > a:nth-of-type(2)')
+            repo_list = project_html.select('div.f4 > a')
             if not repo_list:
                 break
             # Handle file links for each project
@@ -185,10 +185,11 @@ class GitPrey(object):
                 file_url = repo.attrs['href']
                 cur_project_name = "/".join(file_url.split("/")[1:3])
                 if cur_project_name not in repo_file_dic.keys():
+                    repo_file_dic[cur_project_name] = [HOST_NAME + file_url[1:]]  # Project item init
                     if print_mode:
                         self.__output_project_info(cur_project_name)
                         file_print("[-] Compromise File:")
-                    repo_file_dic[cur_project_name] = []  # Set compromise project item
+                        file_print(HOST_NAME + file_url[1:])
                 else:
                     repo_file_dic[cur_project_name].append(HOST_NAME + file_url[1:])  # Set compromise project file item
                     if print_mode:
