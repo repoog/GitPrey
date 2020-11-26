@@ -6,9 +6,9 @@ GitPrey是根据企业关键词进行项目检索以及相应敏感文件和敏�
 * 根据关键词在GitHub中进行全局代码内容和路径的搜索（in:file,path），将项目结果做项目信息去重整理得到所有关键词相关的项目，即疑似项目结果；
 * 基于PATTERN_DB中的敏感文件名或敏感代码对所有疑似项目做文件名搜索（filename:）和代码搜索（in:file）；
 * 将匹配搜索到的结果按照项目整理输出；
-由于无法做到精确匹配和精确识别，因此扫描结果或存在一定的漏报（比如项目中未出现关键词路径或内容）或误报（比如第三方项目引用关键词内容）情况，其中漏报的原因还包括Github的搜索限制：
+由于无法做到精确匹配和精确识别，因此扫描结果或存在一定的漏报（比如项目中未出现关键词路径或内容）或误报（比如第三方项目引用关键词内容）情况，其中漏报的原因还包括GitHub的搜索限制：
 * 默认只搜索主分支代码，多数情况下是master分支；
-* Github最大只允许搜索1000条代码项，即100页代码；
+* GitHub最大只允许搜索1000条代码项，即100页代码；
 * 代码搜索仅搜索不大于384Kb的文件；
 
 此外，不同关键词搜索的疑似项目数量不同，少则数个，多则数十个甚至数百个，并会对搜索和扫描时间造成直接影响（另一影响因素是匹配的文件名关键词数量和内容关键词数量），项目和关键词越多，扫描时间越长。因此可以根据需要进行扫描深度的选择，这一维度由GitHub最近索引（Recently Indexed）排序的代码页决定，深度越深，检索的项目数量越多，反之亦然。深度选项和说明如下：
@@ -21,8 +21,8 @@ GitPrey是根据企业关键词进行项目检索以及相应敏感文件和敏�
 深度选择与企业扫描周期性应该成正相关，深度选择小，则相应扫描的周期性也应当较小，如深度选择为Level 1，则相应的扫描周期基于企业情况可定为每天或每周，深度选择为Level 5，则相应的扫描周期可适当延长。例如，关键词“Google”最大（Level 5）可搜索两天前上传的项目代码，而关键词“repoog”搜索结果则不足1页。
 
 ### 技术实现
-项目配置文件Config.py中需要配置使用者的Github用户名、密码：
-* 未登录Github进行代码搜索会因为请求速度过快（约10页代码结果页）而返回HTTP STATUE 429，即Too Many Requests的错误，因此需要登录后进行搜索；
+项目配置文件Config.py中需要配置使用者的GitHub用户名、密码：
+* 未登录GitHub进行代码搜索会因为请求速度过快（约10页代码结果页）而返回HTTP STATUE 429，即Too Many Requests的错误，因此需要登录后进行搜索；
 * 在项目内关键词文件名和关键词内容扫描时未采用API，原因有两点：一是搜索代码的API频率限制很大（认证后30次/分钟）无法满足快速搜索；二是某些项目关键词的搜索结果项超过100条，而API在设置per_page参数后至多支持展现100条结果项；
 项目配置文件Config.py中需要配置FILE_DB/INFO_DB/PASS_DB/PATH_DB项，用途如下：_
 * 敏感文件搜索是基于配置项中的PATH_DB内容检索特定文件的泄漏；
@@ -44,7 +44,7 @@ USAGE:
 pattern为搜索项文件配置目录，相关文件说明如下：
 * path.db：敏感文件名或文件后缀，用于搜索文件名，如：htpasswd
 * file.db：敏感内容关键词搜索的文件名称范围，内容搜索在该文件名称范围内进行，如：.env
-* info.db：敏感内容关键词（由于AND/OR/NOT操作符在Github单次搜索中最多支持五个，故关键词会进行轮询），如：password
+* info.db：敏感内容关键词（由于AND/OR/NOT操作符在GitHub单次搜索中最多支持五个，故关键词会进行轮询），如：password
 
 ### 程序更新
 * v1.0 初始版本
@@ -53,20 +53,20 @@ pattern为搜索项文件配置目录，相关文件说明如下：
 * v2.2 优化部分代码，增加项目搜索进度条，解决代码输出BUG
 * v2.4 优化程序目录设计，优化源码实现，增加默认文件输出
 * v2.5 优化代码搜索为整页代码搜索，优化颜色输出及文件输出，优化代码实现
-* v2.6 更新Python版本到Python3.6，修正Github页面爬虫
+* v2.6 更新Python版本到Python3.6，修正GitHub页面爬虫
 
 ***
-## Sensitive info scan tool of Github
+## Sensitive info scan tool of GitHub
 ### Function introduction and design
-GitPrey is a tool for searching sensitive information or data according to company name or key word something.The design mind is from searching sensitive data leakling in Github:
+GitPrey is a tool for searching sensitive information or data according to company name or key word something.The design mind is from searching sensitive data leakling in GitHub:
 * Search code in file and path according to key word to get all related projects;
 * Search code in every related project to find matching file or content in PATTERN_DB;
 * Output all matching file information,project information and user information;
 
 By the way, there is some missing file or mistake file with using Gitprey,the reason is:
-* Only the default branch is considered by Github. In most cases, this will be the master branch.
-* Only files smaller than 384 KB are searchable by Github.
-* Github only make up to 1,000 results for each search.
+* Only the default branch is considered by GitHub. In most cases, this will be the master branch.
+* Only files smaller than 384 KB are searchable by GitHub.
+* GitHub only make up to 1,000 results for each search.
 
 Gitprey also provides the search level to adjust scanning deep, it's between Level 1 to Level 5:
 * Level 1: Only search 10 pages in recently indexed code results.
@@ -75,12 +75,12 @@ Gitprey also provides the search level to adjust scanning deep, it's between Lev
 * Level 4: Only search 70 pages in recently indexed code results.
 * Level 5: Only search 100 pages in recently indexed code results.
 
-You can modify the Level in Config.py.To search as quick as you can,you must configure your own Github account username and password to avoid 429 ERROR which is too many requests.
+You can modify the Level in Config.py.To search as quick as you can,you must configure your own GitHub account username and password to avoid 429 ERROR which is too many requests.
 
 ### Tech detail introduction
 There are some hints to declare about technological details:
-* Github API is not used in searching code,because its rate limit up to 30 times per minute,even if you authenticate by access token.
-* Only user information crawler used Github API,it's enough for scanning speed.
+* GitHub API is not used in searching code,because its rate limit up to 30 times per minute,even if you authenticate by access token.
+* Only user information crawler used GitHub API,it's enough for scanning speed.
 You have to config FILE_DB/INFO_DB/PASS_DB/PATH_DB in config.py:
 * PATH_DB is used to search specific file in related projects when searching file leaking.
 * FILE_DB and PASS_DB are used to searching sensitive content in related projects when searching content leaking, while INFO_DB and PASS_DB is used to output code line._
