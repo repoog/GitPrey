@@ -7,12 +7,13 @@ except ImportError:
     exit()
 
 import logging
+import os
 
 init(autoreset=True)
 
 logger = logging.getLogger('')
 logger.setLevel(logging.INFO)
-file_handle = logging.FileHandler('GitPrey.log')
+file_handle = logging.FileHandler(os.path.join(os.path.dirname(__file__), '../GitPrey.log'))
 file_handle.setLevel(logging.INFO)
 formatter = logging.Formatter('%(message)s')
 file_handle.setFormatter(formatter)
@@ -28,7 +29,6 @@ def error_print(string):
 def info_print(string):
     # Print information with green color
     print(Fore.GREEN + string)
-    logger.info(string)
 
 
 def project_print(string):

@@ -13,6 +13,7 @@ except ImportError:
     print("[!]Error: You have to install BeautifulSoup module.")
     exit()
 
+import os
 import re
 import math
 import sys
@@ -61,8 +62,7 @@ class GitPrey(object):
     def __init__(self, keyword):
         self.keyword = keyword
         self.search_url = "https://github.com/search?o=desc&p={page}&q={keyword}&ref=searchresults&s=indexed&type=Code&utf8=%E2%9C%93"
-        self.headers = {
-            'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.116 Safari/537.36"}
+        self.headers = {'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.116 Safari/537.36"}
         self.cookies = ""
 
     def search_project(self):
@@ -72,7 +72,7 @@ class GitPrey(object):
         """
         unique_project_list = []
         self.__auto_login(USER_NAME, PASSWORD)
-        info_print('[*] Searching projects hard...')
+        info_print('[*] Searching hard for projects...')
 
         # Get unique project list of first page searched results
         total_progress = SCAN_DEEP[SEARCH_LEVEL - 1]
@@ -105,8 +105,8 @@ class GitPrey(object):
         :returns: Project list of per page
         """
         cur_par_html = BeautifulSoup(page_html, "lxml")
-        project_info = cur_par_html.select("a.text-bold")
-        page_project = [project.text for project in project_info]
+        project_info = cur_par_html.select("a.link-gray")
+        page_project = [project.text.strip() for project in project_info]
         return page_project
 
     def sensitive_info_query(self, project_string, mode):
@@ -114,7 +114,7 @@ class GitPrey(object):
         Search sensitive information and sensitive file from projects
         :param project_string: Key words string for querying
         :param mode: Searching mode within "content" or "filename"
-        :returns: None
+        :returns: Code segments or file lists
         """
         if mode == "content":
             # Output code line with sensitive key words like username.
@@ -132,16 +132,17 @@ class GitPrey(object):
         if mode == "filename":
             # Search project according to file path.
             path_sig_list = self.__pattern_db_list(PATH_DB)
-            path_string = " filename:" + " filename:".join(path_sig_list) + project_string
+            path_string = "filename:" + " filename:".join(path_sig_list) + project_string
             repo_file_dic = self.__file_name_inspect(path_string, print_mode=1)
             return repo_file_dic
 
     def __file_content_inspect(self, project_string, file_pattern, project_pattern):
         """
         Check sensitive code in particular project
-        :param content_query_string: Content string for searching
-        :param info_sig_match: information signature match regular
-        :returns: None
+        :param project_string: Projects for searching
+        :param file_pattern: File string for searching
+        :param project_pattern: Content signature match regular
+        :returns: Code segments
         """
         query_string = " OR ".join(project_pattern)
         repo_file_dic = self.__file_name_inspect(query_string + project_string + file_pattern)
@@ -169,7 +170,8 @@ class GitPrey(object):
         """
         Inspect sensitive file in particular project
         :param file_query_string: File string for searching
-        :returns: None
+        :param print_mode: 1 means print file, 0 means print code
+        :returns: Files lists
         """
         page_num = 1
         repo_file_dic = {}
@@ -177,7 +179,7 @@ class GitPrey(object):
             check_url = self.search_url.format(page=page_num, keyword=file_query_string)
             page_html = self.__get_page_html(check_url)
             project_html = BeautifulSoup(page_html, 'lxml')
-            repo_list = project_html.select('div .min-width-0 > a:nth-of-type(2)')
+            repo_list = project_html.select('a[data-hydro-click-hmac]')
             if not repo_list:
                 break
             # Handle file links for each project
@@ -205,7 +207,7 @@ class GitPrey(object):
         :returns: Signature item list
         """
         item_list = []
-        with open(file_path, 'r') as pattern_file:
+        with open(os.path.join(os.path.dirname(__file__), file_path), 'r') as pattern_file:
             item_line = pattern_file.readline()
             while item_line:
                 item_list.append(item_line.strip())
@@ -239,7 +241,7 @@ class GitPrey(object):
         for item in input_items:
             post_data[item.get('name')] = item.get('value')
         post_data['login'], post_data['password'] = username, password
-        login_request.post("https://github.com/session", data=post_data, headers=self.headers)
+        login_request.post("https://github.com/session", data=post_data, cookies=login_html.cookies, headers=self.headers)
         self.cookies = login_request.cookies
         if self.cookies['logged_in'] == 'no':
             error_print('[!] Error: Login Github failed, please check account in config file.')
@@ -280,18 +282,16 @@ def is_keyword_valid(keyword):
 def init():
     """
     Initialize GitPrey with module inspection and input inspection
-    :return: None
+    :return: Key words
     """
     if not importlib.util.find_spec('lxml'):
-        error_print('[!]Error: You have to install lxml module.')
+        error_print('[!] Error: You have to install lxml module.')
         exit()
 
     # Get command parameters for searching level and key words
     parser = argparse.ArgumentParser(description="Searching sensitive file and content in GitHub.")
-    parser.add_argument("-l", "--level", type=int, choices=range(1, 6), default=1, metavar="level",
-                        help="Set search level within 1~5, default is 1.")
-    parser.add_argument("-k", "--keywords", metavar="keywords", required=True,
-                        help="Set key words to search projects.")
+    parser.add_argument("-l", "--level", type=int, choices=range(1, 6), default=1, metavar="level", help="Set search level within 1~5, default is 1.")
+    parser.add_argument("-k", "--keywords", metavar="keywords", required=True, help="Set key words to search projects.")
     args = parser.parse_args()
 
     SEARCH_LEVEL = args.level if args.level else 1
@@ -309,7 +309,6 @@ def init():
 
     return key_words
 
-
 def project_miner(key_words):
     """
     Search projects for content and path inspection later.
@@ -322,6 +321,9 @@ def project_miner(key_words):
 
     project_info_output = "\n[*] Found {num} public projects related to the key words.\n"
     info_print(project_info_output.format(num=len(total_project_list)))
+
+    if (len(total_project_list) == 0):
+        exit(0)
 
     # Join all projects to together to search
     repo_string = " repo:" + " repo:".join(total_project_list)

@@ -1,7 +1,7 @@
 ## GitHub敏感信息扫描工具
 ![](https://img.shields.io/github/license/repoog/GitPrey.svg)
 [![Twitter](https://img.shields.io/twitter/url/https/github.com/repoog/GitPrey.svg?style=social)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Frepoog%2FGitPrey)
-### 功能设计说明
+### 功能设计
 GitPrey是根据企业关键词进行项目检索以及相应敏感文件和敏感文件内容扫描的工具，其设计思路如下：
 * 根据关键词在GitHub中进行全局代码内容和路径的搜索（in:file,path），将项目结果做项目信息去重整理得到所有关键词相关的项目，即疑似项目结果；
 * 基于PATTERN_DB中的敏感文件名或敏感代码对所有疑似项目做文件名搜索（filename:）和代码搜索（in:file）；
@@ -20,7 +20,7 @@ GitPrey是根据企业关键词进行项目检索以及相应敏感文件和敏�
 
 深度选择与企业扫描周期性应该成正相关，深度选择小，则相应扫描的周期性也应当较小，如深度选择为Level 1，则相应的扫描周期基于企业情况可定为每天或每周，深度选择为Level 5，则相应的扫描周期可适当延长。例如，关键词“Google”最大（Level 5）可搜索两天前上传的项目代码，而关键词“repoog”搜索结果则不足1页。
 
-### 技术实现说明
+### 技术实现
 项目配置文件Config.py中需要配置使用者的Github用户名、密码：
 * 未登录Github进行代码搜索会因为请求速度过快（约10页代码结果页）而返回HTTP STATUE 429，即Too Many Requests的错误，因此需要登录后进行搜索；
 * 在项目内关键词文件名和关键词内容扫描时未采用API，原因有两点：一是搜索代码的API频率限制很大（认证后30次/分钟）无法满足快速搜索；二是某些项目关键词的搜索结果项超过100条，而API在设置per_page参数后至多支持展现100条结果项；
@@ -28,7 +28,7 @@ GitPrey是根据企业关键词进行项目检索以及相应敏感文件和敏�
 * 敏感文件搜索是基于配置项中的PATH_DB内容检索特定文件的泄漏；
 * 敏感内容搜索是基于PASS_DB和FILE_DB进行检索，再根据INFO_DB和PASS_DB输出相关代码行；_
 
-### 程序使用帮助
+### 程序使用
 GitPrey v2.2版本后去除了ACCESS_TOKEN的配置以及配置文件中的SEARCH_LEVEL和KEYWORDS配置项，改用命令行参数方式执行：
 ```
 USAGE:
@@ -40,13 +40,13 @@ USAGE:
 * -k：必填参数，用于设置搜索关键词，若关键词中包含空白字符，需用双引号将关键词括起来；
 * -h：帮助信息。
 
-### 文件配置说明
+### 文件配置
 pattern为搜索项文件配置目录，相关文件说明如下：
 * path.db：敏感文件名或文件后缀，用于搜索文件名，如：htpasswd
 * file.db：敏感内容关键词搜索的文件名称范围，内容搜索在该文件名称范围内进行，如：.env
 * info.db：敏感内容关键词（由于AND/OR/NOT操作符在Github单次搜索中最多支持五个，故关键词会进行轮询），如：password
 
-### 程序更新列表
+### 程序更新
 * v1.0 初始版本
 * v2.0 更新搜索设计和算法
 * v2.1 更新搜索结果输出展现
